@@ -7,8 +7,11 @@
 #define GDISP_DRIVER_VMT			GDISPVMT_WAVESHARE75
 #include "gdisp_lld_config.h"
 #include "../ugfx/src/gdisp/gdisp_driver.h"
-#include "board_WAVESHARE75.h"
-#include "bithelper.h"
+#if defined(STM32F407xx)
+#include "stm32_board_WAVESHARE75.h"
+#else
+#include "raspi_board_WAVESHARE75.h"
+#endif
 
 /*===========================================================================
 Framebuffer setup 
@@ -204,7 +207,7 @@ LLDSPEC void gdisp_lld_flush(GDisplay* g)
 		}			
 	}
 	sendCommand(DISPLAY_REFRESH);
-	HAL_Delay(100);	
+//	HAL_Delay(100);	
 	waitUntilIdle();
 		
 	// Release the bus
