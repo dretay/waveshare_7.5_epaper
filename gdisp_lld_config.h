@@ -12,6 +12,7 @@
 /* Driver hardware support.                                                  */
 /*===========================================================================*/
 
+#define GDISP_HARDWARE_PIXELREAD		FALSE
 #define GDISP_HARDWARE_DRAWPIXEL        TRUE
 #define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_GRAY4
 //#define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_MONO

@@ -142,6 +142,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 
 	return TRUE;
 }
+
 #if GDISP_HARDWARE_FLUSH
 LLDSPEC void gdisp_lld_flush(GDisplay* g)
 {
@@ -207,7 +208,6 @@ LLDSPEC void gdisp_lld_flush(GDisplay* g)
 		}			
 	}
 	sendCommand(DISPLAY_REFRESH);
-//	HAL_Delay(100);	
 	waitUntilIdle();
 		
 	// Release the bus
@@ -217,66 +217,63 @@ LLDSPEC void gdisp_lld_flush(GDisplay* g)
 	FB_FLUSH_NONE(&priv->fb);
 }
 #endif
-#if GDISP_HARDWARE_DRAWPIXEL
-LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g)
-{
-	coord_t			x, y;
-	WAVESHARE75_Private	*priv;
+#if GDISP_HARDWARE_PIXELREAD || GDISP_HARDWARE_DRAWPIXEL
 
-	priv = (WAVESHARE75_Private *)g->priv;
-
+static void translate_coordinates(GDisplay* g, coord_t *_x, coord_t *_y)
+{	
+	coord_t			x, y;	
 	// Handle the different possible orientations
 	#if GDISP_NEED_CONTROL && GDISP_HARDWARE_CONTROL
 		switch(g->g.Orientation) {
-		default:
-		case GDISP_ROTATE_0:
-			#if FB_REVERSEAXIS_X
-				x = FB_WIDTH - 1 - g->p.x;
-			#else
-				x = g->p.x;
-			#endif
-			#if FB_REVERSEAXIS_Y
-				y = FB_HEIGHT - 1 - g->p.y;
-			#else
-				y = g->p.y;
-			#endif
-			break;
-		case GDISP_ROTATE_90:
-			#if FB_REVERSEAXIS_X
-				x = FB_WIDTH - 1 - g->p.y;
-			#else
-				x = g->p.y;
-			#endif
-			#if FB_REVERSEAXIS_Y
-				y = g->p.x;
-			#else
-				y = FB_HEIGHT - 1 - g->p.x;
-			#endif
-			break;
-		case GDISP_ROTATE_180:
-			#if FB_REVERSEAXIS_X
-				x = g->p.x;
-			#else
-				x = FB_WIDTH - 1 - g->p.x;
-			#endif
-			#if FB_REVERSEAXIS_Y
-				y = g->p.y;
-			#else
-				y = FB_HEIGHT - 1 - g->p.y;
-			#endif
-			break;
-		case GDISP_ROTATE_270:
-			#if FB_REVERSEAXIS_X
-				x = g->p.y;
-			#else
-				x = FB_WIDTH - 1 - g->p.y;
-			#endif
-			#if FB_REVERSEAXIS_Y
-				y = FB_HEIGHT - 1 - g->p.x;
-			#else
-				y = g->p.x;
-			#endif
-			break;
+			default:
+			case GDISP_ROTATE_0:
+				#if FB_REVERSEAXIS_X
+					x = FB_WIDTH - 1 - g->p.x;
+				#else
+					x = g->p.x;
+				#endif
+				#if FB_REVERSEAXIS_Y
+					y = FB_HEIGHT - 1 - g->p.y;
+				#else
+					y = g->p.y;
+				#endif
+				break;
+			case GDISP_ROTATE_90:
+				#if FB_REVERSEAXIS_X
+						x = FB_WIDTH - 1 - g->p.y;
+				#else
+						x = g->p.y;
+				#endif
+				#if FB_REVERSEAXIS_Y
+						y = g->p.x;
+				#else
+						y = FB_HEIGHT - 1 - g->p.x;
+				#endif
+				break;
+			case GDISP_ROTATE_180:
+				#if FB_REVERSEAXIS_X
+						x = g->p.x;
+				#else
+						x = FB_WIDTH - 1 - g->p.x;
+				#endif
+				#if FB_REVERSEAXIS_Y
+						y = g->p.y;
+				#else
+						y = FB_HEIGHT - 1 - g->p.y;
+				#endif
+				break;
+			case GDISP_ROTATE_270:
+				#if FB_REVERSEAXIS_X
+						x = g->p.y;
+				#else
+						x = FB_WIDTH - 1 - g->p.y;
+				#endif
+				#if FB_REVERSEAXIS_Y
+						y = FB_HEIGHT - 1 - g->p.x;
+				#else
+						y = g->p.x;
+				#endif
+				break;
 		}
 	#else
 		#if FB_REVERSEAXIS_X
@@ -290,6 +287,19 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g)
 			y = g->p.y;
 		#endif
 	#endif
+
+	*_x = x;
+	*_y = y;
+}
+#endif
+
+#if GDISP_HARDWARE_DRAWPIXEL
+LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g)
+{
+	coord_t			x, y;
+	WAVESHARE75_Private	*priv;
+	priv = (WAVESHARE75_Private *)g->priv;
+	translate_coordinates(g, &x, &y);	
 		
 	// Modify the framebuffer content
 	int addr = (x) / FB_TYPE_PIXELS + (y)*FB_LINE_TYPES;

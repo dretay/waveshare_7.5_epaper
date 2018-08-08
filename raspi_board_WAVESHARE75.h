@@ -18,10 +18,6 @@ enum PixelMode {
 	PixelSet   = 1,      // set the pixel(s)
 	PixelFlip  = 2      // invert the pixel(s)
 };
-//typedef struct {
-//	GPIO_TypeDef* port;
-//	int pin;
-//} Board_Pin;
 
 //pin assignments
 #define RST_Pin GPIO_PIN_1
@@ -42,27 +38,6 @@ enum PixelMode {
 
 #define	SPI_CHAN		0
 static int h;
-
-//Board_Pin cs_pin = {
-//	SPI_CS_GPIO_Port,
-//	SPI_CS_Pin,
-//};
-//Board_Pin rst_pin = {
-//	RST_GPIO_Port,
-//	RST_Pin,
-//};
-//Board_Pin dc_pin = {
-//	DC_GPIO_Port,
-//	DC_Pin,
-//};
-//Board_Pin busy_pin = {
-//	BUSY_GPIO_Port,
-//	BUSY_Pin,
-//};
-//Board_Pin pins[4];
-
-//spi handle
-//extern SPI_HandleTypeDef hspi1;
 
 //constants
 const uint8_t CS_PIN = 8;

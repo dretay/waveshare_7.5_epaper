@@ -40,3 +40,4 @@ const uint8_t GET_STATUS = 0x71;
 const uint8_t AUTO_MEASUREMENT_VCOM = 0x80;
 const uint8_t READ_VCOM_VALUE = 0x81;
 const uint8_t VCM_DC_SETTING = 0x82;
+
