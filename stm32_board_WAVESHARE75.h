@@ -83,6 +83,7 @@ static void reset(void) {
 	HAL_Delay(200);	
 }
 
+
 void spiTransfer(unsigned char data) {
 	HAL_GPIO_WritePin((GPIO_TypeDef*)pins[CS_PIN].port, pins[CS_PIN].pin, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi1, &data, 1, 1000);
@@ -105,7 +106,13 @@ void waitUntilIdle(void) {
 	  HAL_Delay(100);
 	}	
 }
-
+static void sleep(void)
+{
+	sendCommand(POWER_OFF);
+	waitUntilIdle();
+	sendCommand(DEEP_SLEEP);
+	sendData(0xa5);
+}
 static GFXINLINE bool init_board(GDisplay* g) {
 	(void) g; 
 	

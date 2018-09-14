@@ -65,35 +65,16 @@ typedef struct UC8173_Private {
 /*===========================================================================*/
 /* Driver exported functions.                                                */
 /*===========================================================================*/
-
-LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
-
-	WAVESHARE75_Private	*priv;
-	
-	// Allocate the private area
-	g->priv = gfxAlloc(sizeof(WAVESHARE75_Private));
-	if (!g->priv)
-		return FALSE;
-	priv = (WAVESHARE75_Private *)g->priv;
-
-	// Initialise the board interface
-	if(!init_board(g))
-	{
-		return FALSE;
-	}
-
-
-
+static void init(void)
+{
 	reset();
 	
-	acquire_bus(g);
-
 	sendCommand(POWER_SETTING); 
 	sendData(0x37);
 	sendData(0x00);
   
 	sendCommand(PANEL_SETTING);	
-	sendData(0xCF);	//600x448, lut from flash, scan up, shift right
+	sendData(0xCF); 	//600x448, lut from flash, scan up, shift right
 	sendData(0x08);		
     
 	sendCommand(BOOSTER_SOFT_START);
@@ -117,18 +98,32 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	sendData(0x22);
   
 	sendCommand(TCON_RESOLUTION);
-	sendData(0x02);       //source 640
+	sendData(0x02);        //source 640
 	sendData(0x80);
-	sendData(0x01);       //gate 384
+	sendData(0x01);        //gate 384
 	sendData(0x80);
   
 	sendCommand(VCM_DC_SETTING);
-	sendData(0x1E);        //decide by LUT file
+	sendData(0x50);         //decide by LUT file
   
-	sendCommand(0xe5);             //FLASH MODE            
-	sendData(0x03);  	
+	sendCommand(0xe5);              //FLASH MODE            
+	sendData(0x03);  
+}
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 
-	release_bus(g);
+	WAVESHARE75_Private	*priv;
+	
+	// Allocate the private area
+	g->priv = gfxAlloc(sizeof(WAVESHARE75_Private));
+	if (!g->priv)
+		return FALSE;
+	priv = (WAVESHARE75_Private *)g->priv;
+
+	// Initialise the board interface
+	if(!init_board(g))
+	{
+		return FALSE;
+	}
 
 	// Finish Init
 	post_init_board(g);
@@ -157,6 +152,9 @@ LLDSPEC void gdisp_lld_flush(GDisplay* g)
 		
 	// Acquire the bus to communicate with the display controller
 	acquire_bus(g);
+	//power-up the dc-dc converter. since display is in deep sleep 
+	init();
+	
 
 	// Calculate the width, height
 	FB_FLUSH_ALL(&priv->fb);
@@ -209,7 +207,10 @@ LLDSPEC void gdisp_lld_flush(GDisplay* g)
 	}
 	sendCommand(DISPLAY_REFRESH);
 	waitUntilIdle();
-		
+
+	//power-down the dc-dc converter
+	sleep();
+
 	// Release the bus
 	release_bus(g);
 
